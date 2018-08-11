@@ -28,3 +28,10 @@ Continue? [Y/n] y
 You should get a response from 25 and 44 if the vbit chips are working. If not you should look in the Raspbarry Pi config that i2c is enabled.
 ### video path
 This test configures the video chips. Put PAL video in vbit on the left hand connector. Run PAL video from the right hand output to a TV monitor. Run the shell script vbit-i2c.sh. The picture should be passed through the video chain and appear on the monitor.
+### spiram
+This test checks that the spiram is working. This test does not need video running. The resulting array should be the same as the one that was written to the spiram. If errors or randomness happens try reducing the spi bus speed as mentioned in the source code.
+```bash
+pi@raspberrypi:~/vbit-py $ python spi.py
+[65, 66, 67, 68, 77, 77, 77, 77, 77, 77, 77, 55, 77, 77, 77]
+clean up
+```
