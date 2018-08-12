@@ -24,10 +24,13 @@ GPIO_LED=4 #define GPIO_LED 7 -> Broadcom 4
 GPIO.setup(4, GPIO.OUT)
 GPIO.setup(22, GPIO.IN)
 
+# This is the interrupt routine that triggers on each field
 def fieldEdge(self):
   field= GPIO.input(GPIO_FLD)
-  GPIO.output(GPIO_LED, field)
-
+  # GPIO.output(GPIO_LED, field) # this is the 25Hz flash
+  GPIO.output(GPIO_LED, GPIO.HIGH)
+  time.sleep(0.0016) # Between Suspend while 1.6 ms
+  GPIO.output(GPIO_LED, GPIO.LOW)
 print 'System started'
 
 #try:
@@ -44,6 +47,7 @@ GPIO.add_event_detect(GPIO_FLD, GPIO.BOTH, callback=fieldEdge) # Look for the fi
 #   print("clean up") 
 #   GPIO.cleanup() # cleanup all GPIO 
 
+# This thread will be used to read the input stream into a field buffer
 while True:
   time.sleep(5)
 
