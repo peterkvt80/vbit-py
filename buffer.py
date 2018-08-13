@@ -9,6 +9,7 @@ import sys
 
 class Buffer:
   clockFrame = b'\x55\x55\x27' # clock run-in and framing code
+  print ('Buffer created')
   def __init__(self):
     self.field=bytearray()
     self.count = 0 # The packet count
@@ -23,21 +24,5 @@ class Buffer:
     self.count = 0 # The packet count
   def printPacket(self):
       print (self.field)
-
-#  main
-packetSize=42
-#filename='data.txt'
-#file=open(filename, "rb")
-buf = Buffer()
-for field in range(4):
-  for line in range(16):  
-    # packet=file.read(packetSize)
-    packet=sys.stdin.buffer.read(packetSize)
-    print (packet)
-    buf.addPacket(packet)
-    if packet == '':
-      break
-  print ("*****FIELD******* size=",len(buf.field))
-  #buf.printPacket()
-  buf.clearBuffer()
+      
 
