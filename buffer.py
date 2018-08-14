@@ -7,15 +7,27 @@
 
 import sys
 
+def reverse(x):
+  x = ((x & 0xF0) >> 4) | ((x & 0x0F) << 4)
+  x = ((x & 0xCC) >> 2) | ((x & 0x33) << 2)
+  x = ((x & 0xAA) >> 1) | ((x & 0x55) << 1)
+  return x  
+
 class Buffer:
   clockFrame = b'\x55\x55\x27' # clock run-in and framing code
+#  clockFrame = b'\xaa\xaa\xe4' # clock run-in and framing code (reversed?)
   print ('Buffer created')
   def __init__(self):
     self.field=bytearray()
     self.count = 0 # The packet count
   def addPacket(self,pkt):
+  #horrible suspicion that all characters need to be endian reversed
     # could add test for 42 character packets
     # Append the new packet
+ #   for i in range(len(Buffer.clockFrame)):
+ #     self.field.extend(reverse(Buffer.clockFrame[i]))
+ #   for i in range(len(pkt)):
+ #     self.field.extend(reverse(pkt))
     self.field.extend(Buffer.clockFrame)
     self.field.extend(pkt)
     self.count+=1
@@ -25,4 +37,3 @@ class Buffer:
   def printPacket(self):
       print (self.field)
       
-

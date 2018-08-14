@@ -9,7 +9,6 @@
 # and transfers it to the fifo
 # All this module does is set up the spiram so it is ready to transfer data
 #
-# The source data is double buffered (two fields)
 
 import RPi.GPIO as GPIO
 from spi import SPIRAM
@@ -18,24 +17,18 @@ GPIO.setup(25, GPIO.OUT) # GPIO_MUX
 class Fifo:
   def __init__(self):
     self.spiram=SPIRAM(0,0)
-    self.spiram.setStatus(SPIRAM.MODE_SEQUENTIAL) ## set the addressing mode   
+    self.spiram.setStatus(SPIRAM.MODE_SEQUENTIAL) #/// set the addressing mode
     self.GPIO_MUX=25 #define GPIO_MUX 6 -> Broadcom 25
     print ('Fifo created')
 
-  def transmit(self, odd): #/// Read from the odd or even field and send out teletext
-    GPIO.output(self.GPIO_MUX, GPIO.HIGH) # Switch the MUX to TTX out
-    if odd:
-      address=0
-    else:
-      address = 45 * 16 # In other words 720
-    self.spiram.setAddress(SPIRAM.READ,address)
-
-  def fill(self, odd): # /// Set the control to the CPU. Ready to accept data into the fifo
+  def transmit(self): #/// Read from the odd or even field and send out teletext
     GPIO.output(self.GPIO_MUX, GPIO.LOW) # Switch the MUX to the CPU
-    if odd:
-      address=0
-    else:
-      address = 45 * 16 # In other words 720
-    self.spiram.setAddress(SPIRAM.WRITE,address)
+    self.spiram.setAddress(SPIRAM.READ,0)
+    GPIO.output(self.GPIO_MUX, GPIO.HIGH) # Switch the MUX to TTX out
+
+  def fill(self): # /// Set the control to the CPU. Ready to accept data into the fifo
+    GPIO.output(self.GPIO_MUX, GPIO.LOW) # Switch the MUX to the CPU
+    self.spiram.setAddress(SPIRAM.WRITE,0)
+    
   
   

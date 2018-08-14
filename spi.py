@@ -42,16 +42,17 @@ class SPIRAM:
     # long cable or ropey ribbon cable, try 122000
     # If you have a shorter cable you can go faster. 
     # More speeds at www.takaitra.com/posts/492
-    self.spi.max_speed_hz=7800000
+    self.spi.max_speed_hz=7800000 # normal speed
+    # self.spi.max_speed_hz=488000 # slowest that will work
 
   # chip select
   def toggleCS(self): # /// Toggle the chip select prior to setting state
     # deselect and reselect the chip prior to setting it up
-    GPIO.output(24, GPIO.HIGH)
-    time.sleep(0.000001)
+    GPIO.output(24, GPIO.HIGH) # CSN
+    time.sleep(0.000110)
     GPIO.output(24, GPIO.LOW)
   def deselect(self):
-    GPIO.output(24, GPIO.HIGH) # disable the spiram
+    GPIO.output(24, GPIO.HIGH) # disable the spiram CSN
   # addressing
   # /// mode - A mode value SPIRAM_MODE_*
   # /// address - 0..32k assuming a 23K256 memory

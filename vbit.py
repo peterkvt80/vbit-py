@@ -19,11 +19,10 @@ from buffer import Buffer
 GPIO.setmode(GPIO.BCM)
 
 # Globals
-vbiActive=False # True while the vbi is busy. The vbi is using the fifo
 bufferReady=False # When a field is loaded this goes high. Set low when copied to fifo 
 packetSize=42 # The input stream packet size. Does not include CRI and FC
 oddField = True
-countdown=2
+countdown=1
 
 # Setup
 saa7120()
@@ -31,8 +30,7 @@ saa7113()
 
 # Objects
 fifo=Fifo()
-bufOdd=Buffer()
-bufEven=Buffer()
+buf=Buffer()
 
 GPIO_FLD=22 #define GPIO_FLD 3 -> Broadcom 22
 GPIO_CSN=24 #define GPIO_CSN 5 -> Broadcom 24
@@ -47,39 +45,29 @@ GPIO.setup(GPIO_FLD, GPIO.IN)
 def fieldEdge(self):
   global bufferReady
   global oddField
-  global vbiActive
-  global bufOdd
-  global bufEven
+  global buf
   global GPIO_LED
   global GPIO_FLD
 
   oddField = GPIO.input(GPIO_FLD) # Use this to double buffer
-  fifo.transmit(oddField)
   GPIO.output(GPIO_LED, GPIO.HIGH)
-  vbiActive = True
   time.sleep(0.0016) # Between Suspend while 1.6 ms
   # VBIT should be ended now
   fifo.spiram.deselect()
   GPIO.output(GPIO_LED, GPIO.LOW)
-  vbiActive = False
   # we are done with the buffer
   if bufferReady!=True: # @todo if the buffer is not ready, what can we do? Loop a bit?
     print ('?') 
   # fill the other field in the fifo
-  fifo.fill(oddField)
-  if oddField:
-    if len(bufEven.field)==720:
-      fifo.spiram.spi.writebytes(bufEven.field)
-    else:
-      print ('o',end='') # If you see this, we have failed
+  fifo.fill()
+  if len(buf.field)==720:
+      fifo.spiram.spi.writebytes(buf.field)
   else:
-    if len(bufOdd.field)==720:
-      fifo.spiram.spi.writebytes(bufOdd.field)
-    else:
-      print ('e',end='')
-  fifo.spiram.deselect()
+    print ('x',end='') # If you see this, we have failed
   # Done with this buffer 
   bufferReady = False
+  # Get ready to transmit. Do it now while we have plenty of time
+  fifo.transmit()
 
 print ('vbit.py System started')
 
@@ -107,27 +95,20 @@ while True:
   counter+=1
   if (counter % 50) == 0:
     print()
-  if odd:
-    bufEven.clearBuffer()
-  else:
-    bufOdd.clearBuffer()
+  buf.clearBuffer()
   # load a field of 16 vbi lines
   for line in range(16):  
     # packet=file.read(packetSize) # file based version
     packet=sys.stdin.buffer.read(packetSize) # read binary from stdin
-    if odd:
-      bufEven.addPacket(packet)
-    else:
-      bufOdd.addPacket(packet)
+    buf.addPacket(packet)
     if packet == '':
-      break      
+      print ('really bad problem that needs fixing')      
+  if (counter % 250) == 0:
+    print(packet)
   # field is loaded
   bufferReady = True
   
   # Sequence the startup so we get fully buffered before we start transmitting
-  if countdown==2: # Mark the buffer as not ready and load the other field
-    bufferReady = False
-    oddField = not oddField
   if countdown==1: # now the buffer is full we can enable interrupts
     GPIO.add_event_detect(GPIO_FLD, GPIO.BOTH, callback=fieldEdge) # Look for the field pulse   
   if countdown>0:
@@ -135,6 +116,8 @@ while True:
 
   # print ("*****FIELD******* size=",len(buf.field))
   #buf.printPacket()
+ 
   
 
 GPIO.cleanup()
+
