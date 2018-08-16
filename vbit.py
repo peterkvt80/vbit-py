@@ -63,7 +63,8 @@ def fieldEdge(self):
   if len(buf.field)==720:
       fifo.spiram.spi.writebytes(buf.field)
   else:
-    print ('x',end='') # If you see this, we have failed
+    fifo.spiram.spi.writebytes(buf.field)
+    print ('x',len(buf.field),end='') # If you see this, we have failed
   # Done with this buffer 
   bufferReady = False
   # Get ready to transmit. Do it now while we have plenty of time

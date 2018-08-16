@@ -13,8 +13,14 @@ def reverse(x):
   x = ((x & 0xAA) >> 1) | ((x & 0x55) << 1)
   return x  
 
+def reverseBuffer(buf):
+  b=bytearray()
+  for ch in buf:
+    b.append(reverse(ch)) 
+  return b
+
 class Buffer:
-  clockFrame = b'\x55\x55\x27' # clock run-in and framing code
+  clockFrame = bytearray(b'\x55\x55\x27') # clock run-in and framing code
 #  clockFrame = b'\xaa\xaa\xe4' # clock run-in and framing code (reversed?)
   print ('Buffer created')
   def __init__(self):
@@ -28,12 +34,19 @@ class Buffer:
  #     self.field.extend(reverse(Buffer.clockFrame[i]))
  #   for i in range(len(pkt)):
  #     self.field.extend(reverse(pkt))
-    self.field.extend(Buffer.clockFrame)
-    self.field.extend(pkt)
+    self.field.extend(reverseBuffer(Buffer.clockFrame))
+    self.field.extend(reverseBuffer(pkt))
     self.count+=1
   def clearBuffer(self):
     self.field=bytearray()
     self.count = 0 # The packet count
   def printPacket(self):
       print (self.field)
+  def reverseBuffer(self,buf):
+    print (type(buf))
+
+# test for bit order reverse    
+#buf=Buffer()
+#reverseBuffer(Buffer.clockFrame)
+ 
       
