@@ -21,7 +21,6 @@ GPIO.setmode(GPIO.BCM)
 # Globals
 bufferReady=False # When a field is loaded this goes high. Set low when copied to fifo 
 packetSize=42 # The input stream packet size. Does not include CRI and FC
-oddField = True
 countdown=1
 
 # Setup
@@ -44,12 +43,10 @@ GPIO.setup(GPIO_FLD, GPIO.IN)
 # This is the interrupt routine that triggers on each field
 def fieldEdge(self):
   global bufferReady
-  global oddField
   global buf
   global GPIO_LED
   global GPIO_FLD
 
-  oddField = GPIO.input(GPIO_FLD) # Use this to double buffer
   GPIO.output(GPIO_LED, GPIO.HIGH)
   time.sleep(0.0016) # Between Suspend while 1.6 ms
   # VBIT should be ended now
@@ -63,6 +60,7 @@ def fieldEdge(self):
   if len(buf.field)==720:
       fifo.spiram.spi.writebytes(buf.field)
   else:
+    # It may be better to drop this field than play out a partial buffer.
     fifo.spiram.spi.writebytes(buf.field)
     print ('x',len(buf.field),end='') # If you see this, we have failed
   # Done with this buffer 
@@ -72,53 +70,35 @@ def fieldEdge(self):
 
 print ('vbit.py System started')
 
-#try:
+try:
+  # This thread will be used to read the input stream into a field buffer
+  while True:
+    # Wait until the buffer has been used
+    while bufferReady==True:
+      time.sleep(0.0005)
+    buf.clearBuffer()
+    # load a field of 16 vbi lines
+    for line in range(16):  
+      # packet=file.read(packetSize) # file based version
+      packet=sys.stdin.buffer.read(packetSize) # read binary from stdin
+      buf.addPacket(packet)
+      if packet == '':
+        print ('really bad problem that needs fixing')      
+    # field is loaded
+    bufferReady = True
+    
+    # Sequence the startup so we get fully buffered before we start transmitting
+    if countdown==1: # now the buffer is full we can enable interrupts
+      GPIO.add_event_detect(GPIO_FLD, GPIO.BOTH, callback=fieldEdge) # Look for the field pulse   
+    if countdown>0:
+      countdown-=1
 
+except KeyboardInterrupt: # If CTRL+C is pressed, exit cleanly:
+  print("Keyboard interrupt")    
 
-#except KeyboardInterrupt: # If CTRL+C is pressed, exit cleanly:
-#  print("Keyboard interrupt")    
+except:
+   print("some error") 
 
-#except:
-#   print("some error") 
-
-#finally:
-#   print("clean up") 
-#   GPIO.cleanup() # cleanup all GPIO 
-
-# This thread will be used to read the input stream into a field buffer
-counter = 0
-while True:
-  # Wait until the buffer has been used
-  while bufferReady==True:
-    time.sleep(0.0005)
-  odd=oddField
-  print ('.', end='') # for main loop
-  counter+=1
-  if (counter % 50) == 0:
-    print()
-  buf.clearBuffer()
-  # load a field of 16 vbi lines
-  for line in range(16):  
-    # packet=file.read(packetSize) # file based version
-    packet=sys.stdin.buffer.read(packetSize) # read binary from stdin
-    buf.addPacket(packet)
-    if packet == '':
-      print ('really bad problem that needs fixing')      
-  if (counter % 250) == 0:
-    print(packet)
-  # field is loaded
-  bufferReady = True
-  
-  # Sequence the startup so we get fully buffered before we start transmitting
-  if countdown==1: # now the buffer is full we can enable interrupts
-    GPIO.add_event_detect(GPIO_FLD, GPIO.BOTH, callback=fieldEdge) # Look for the field pulse   
-  if countdown>0:
-    countdown-=1
-
-  # print ("*****FIELD******* size=",len(buf.field))
-  #buf.printPacket()
- 
-  
-
-GPIO.cleanup()
-
+finally:
+   print("clean up") 
+   GPIO.cleanup() # cleanup all GPIO 

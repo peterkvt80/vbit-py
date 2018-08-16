@@ -1,35 +1,29 @@
-# spi test for vbit spiram
-# This assumes that spidev0.0 and spidev0.1 are in the /dev folder
-# we will probably use spidev for which we can install liks thie:
-# sudo apt-get install python3-dev
-# pip install https://github.com/cloudformdesign/spidev/archive/master.zip
-# https://github.com/doceme/py-spidev
-# http://tightdev.net/SpiDev_Doc.pdf
+#!/usr/bin/env python3
+
+# SPI druver for Teletext Stream to VBIT hardware
+# Copyright (c) 2018 Peter Kwan
+# MIT License.
+
 import spidev
 import time
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BCM)
 
-#bus = 0
-#device = 1
-#spi = spidev.SpiDev()
-#spi.open(bus, device) #
-#to_send = [0x01, 0x02, 0x03]
-#spi.writebytes(to_send)
-
-
-class SPIRAM:
+class SPIRAM: # spiram is used as a hardware buffer  to play out the teletext packets.
   print ("SPIRAM created")
   # Instruction set of the spiram
+  
   # modes
   READ	=	0x03
   WRITE = 0x02
   RDSR = 0x05
   WRSR	= 0x01
+  
   # status
   MODE_BYTE = 0x00
   MODE_PAGE = 0x80
   MODE_SEQUENTIAL = 0x40
+  
   def __init__(self, bus, device):
     GPIO.setup(24, GPIO.OUT) # GPIO_CSN. Chip select is bit banged because reasons
     self.deselect() # disable the SPIRAM

@@ -7,13 +7,13 @@
 
 import sys
 
-def reverse(x):
+def reverse(x): # reverse the but order in a byte
   x = ((x & 0xF0) >> 4) | ((x & 0x0F) << 4)
   x = ((x & 0xCC) >> 2) | ((x & 0x33) << 2)
   x = ((x & 0xAA) >> 1) | ((x & 0x55) << 1)
   return x  
 
-def reverseBuffer(buf):
+def reverseBuffer(buf): # bit reverse each byte in buf
   b=bytearray()
   for ch in buf:
     b.append(reverse(ch)) 
@@ -27,13 +27,6 @@ class Buffer:
     self.field=bytearray()
     self.count = 0 # The packet count
   def addPacket(self,pkt):
-  #horrible suspicion that all characters need to be endian reversed
-    # could add test for 42 character packets
-    # Append the new packet
- #   for i in range(len(Buffer.clockFrame)):
- #     self.field.extend(reverse(Buffer.clockFrame[i]))
- #   for i in range(len(pkt)):
- #     self.field.extend(reverse(pkt))
     self.field.extend(reverseBuffer(Buffer.clockFrame))
     self.field.extend(reverseBuffer(pkt))
     self.count+=1
@@ -42,11 +35,7 @@ class Buffer:
     self.count = 0 # The packet count
   def printPacket(self):
       print (self.field)
-  def reverseBuffer(self,buf):
-    print (type(buf))
 
-# test for bit order reverse    
-#buf=Buffer()
-#reverseBuffer(Buffer.clockFrame)
+
  
       
