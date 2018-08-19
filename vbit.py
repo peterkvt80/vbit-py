@@ -19,7 +19,6 @@ from buffer import Buffer
 GPIO.setmode(GPIO.BCM)
 
 # Globals
-bufferReady=False # When a field is loaded this goes high. Set low when copied to fifo 
 packetSize=42 # The input stream packet size. Does not include CRI and FC
 countdown=1
 
@@ -29,7 +28,14 @@ saa7113()
 
 # Objects
 fifo=Fifo()
-buf=Buffer()
+
+# buffer stuff
+head=0
+tail=0
+BUFFERS = 2
+buf = [0] * BUFFERS
+for i in range(BUFFERS):
+  buf[i]=Buffer()
 
 GPIO_FLD=22 #define GPIO_FLD 3 -> Broadcom 22
 GPIO_CSN=24 #define GPIO_CSN 5 -> Broadcom 24
@@ -42,29 +48,30 @@ GPIO.setup(GPIO_FLD, GPIO.IN)
 
 # This is the interrupt routine that triggers on each field
 def fieldEdge(self):
-  global bufferReady
   global buf
   global GPIO_LED
   global GPIO_FLD
-
+  global tail
+  global head
   GPIO.output(GPIO_LED, GPIO.HIGH)
+  ##### Wait until the vbi has been transmitted #####
   time.sleep(0.0016) # Between Suspend while 1.6 ms
-  # VBIT should be ended now
+  # vbi is done. load the next field
   fifo.spiram.deselect()
   GPIO.output(GPIO_LED, GPIO.LOW)
   # we are done with the buffer
-  if bufferReady!=True: # @todo if the buffer is not ready, what can we do? Loop a bit?
+  if head == tail: # Source buffer was not ready. We're going to need a faster Pi.
     print ('?') 
-  # fill the other field in the fifo
+  ##### Copy from the source buffer to the fifo #####
   fifo.fill()
-  if len(buf.field)==720:
-      fifo.spiram.spi.writebytes(buf.field)
+  if len(buf[tail].field)==720:
+      fifo.spiram.spi.writebytes(buf[tail].field)
   else:
-    # It may be better to drop this field than play out a partial buffer.
+    # The source buffer was not full. Did we run out of time?
     fifo.spiram.spi.writebytes(buf.field)
-    print ('x',len(buf.field),end='') # If you see this, we have failed
+    print ('x',len(buf[tail].field),end='') # If you see this, we have failed
   # Done with this buffer 
-  bufferReady = False
+  tail=(tail+1)%BUFFERS
   # Get ready to transmit. Do it now while we have plenty of time
   fifo.transmit()
 
@@ -73,19 +80,20 @@ print ('vbit.py System started')
 try:
   # This thread will be used to read the input stream into a field buffer
   while True:
-    # Wait until the buffer has been used
-    while bufferReady==True:
-      time.sleep(0.0005)
-    buf.clearBuffer()
+    ###### Wait while the buffers are full ######
+    while (tail+1)%BUFFERS == head:
+      time.sleep(0.0001)
+    ###### load the next buffer ######
+    buf[head].clearBuffer()
     # load a field of 16 vbi lines
     for line in range(16):  
       # packet=file.read(packetSize) # file based version
       packet=sys.stdin.buffer.read(packetSize) # read binary from stdin
-      buf.addPacket(packet)
+      buf[head].addPacket(packet)
       if packet == '':
         print ('really bad problem that needs fixing')      
-    # field is loaded
-    bufferReady = True
+    ##### step to the next buffer
+    head=(head+1)%BUFFERS
     
     # Sequence the startup so we get fully buffered before we start transmitting
     if countdown==1: # now the buffer is full we can enable interrupts
