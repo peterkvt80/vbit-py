@@ -4,6 +4,8 @@
 # Copyright (c) 2018 Peter Kwan
 # MIT License.
 
+# Release 1.0.1
+
 # System libraries
 import sys
 import time
@@ -31,7 +33,7 @@ fifo=Fifo()
 # buffer stuff
 head=0
 tail=0
-BUFFERS = 10
+BUFFERS = 2
 buf = [0] * BUFFERS
 for i in range(BUFFERS):
   buf[i]=Buffer()
