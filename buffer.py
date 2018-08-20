@@ -7,28 +7,29 @@
 
 import sys
 
-def reverse(x): # reverse the but order in a byte
-  x = ((x & 0xF0) >> 4) | ((x & 0x0F) << 4)
-  x = ((x & 0xCC) >> 2) | ((x & 0x33) << 2)
-  x = ((x & 0xAA) >> 1) | ((x & 0x55) << 1)
-  return x  
 
-def reverseBuffer(buf): # bit reverse each byte in buf
-  b=bytearray()
-  for ch in buf:
-    b.append(reverse(ch)) 
-  return b
+#def reverse(x): # reverse the bit order in a byte
+#  x = ((x & 0xF0) >> 4) | ((x & 0x0F) << 4)
+#  x = ((x & 0xCC) >> 2) | ((x & 0x33) << 2)
+#  x = ((x & 0xAA) >> 1) | ((x & 0x55) << 1)
+#  return x  
+
+#def reverseBuffer(buf): # bit reverse each byte in buf
+#  b=bytearray()
+#  for ch in buf:
+#    b.append(reverse(ch)) 
+#  return b
 
 class Buffer:
-  clockFrame = bytearray(b'\x55\x55\x27') # clock run-in and framing code
-#  clockFrame = b'\xaa\xaa\xe4' # clock run-in and framing code (reversed?)
+  #clockFrame = bytearray(b'\x55\x55\x27') # clock run-in and framing code
+  clockFrame = b'\xaa\xaa\xe4' # clock run-in and framing code (reversed?)
   print ('Buffer created')
   def __init__(self):
     self.field=bytearray()
     self.count = 0 # The packet count
   def addPacket(self,pkt):
-    self.field.extend(reverseBuffer(Buffer.clockFrame))
-    self.field.extend(reverseBuffer(pkt))
+    self.field.extend(Buffer.clockFrame)
+    self.field.extend(pkt)
     self.count+=1
   def clearBuffer(self):
     self.field=bytearray()

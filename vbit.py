@@ -68,7 +68,7 @@ def fieldEdge(self):
       fifo.spiram.spi.writebytes(buf[tail].field)
   else:
     # The source buffer was not full. Did we run out of time?
-    fifo.spiram.spi.writebytes(buf.field)
+    fifo.spiram.spi.writebytes(buf[tail].field)
     print ('x',len(buf[tail].field),end='') # If you see this, we have failed
   # Done with this buffer 
   tail=(tail+1)%BUFFERS
