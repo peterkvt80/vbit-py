@@ -20,7 +20,6 @@ GPIO.setmode(GPIO.BCM)
 
 # Globals
 packetSize=42 # The input stream packet size. Does not include CRI and FC
-countdown=1
 
 # Setup
 saa7120()
@@ -32,10 +31,14 @@ fifo=Fifo()
 # buffer stuff
 head=0
 tail=0
-BUFFERS = 2
+BUFFERS = 10
 buf = [0] * BUFFERS
 for i in range(BUFFERS):
   buf[i]=Buffer()
+
+countdown=BUFFERS-1
+if countdown<1:
+  countdown=1
 
 GPIO_FLD=22 #define GPIO_FLD 3 -> Broadcom 22
 GPIO_CSN=24 #define GPIO_CSN 5 -> Broadcom 24
@@ -64,11 +67,8 @@ def fieldEdge(self):
     print ('?') 
   ##### Copy from the source buffer to the fifo #####
   fifo.fill()
-  if len(buf[tail].field)==720:
-      fifo.spiram.spi.writebytes(buf[tail].field)
-  else:
-    # The source buffer was not full. Did we run out of time?
-    fifo.spiram.spi.writebytes(buf[tail].field)
+  fifo.spiram.spi.writebytes(buf[tail].field)
+  if len(buf[tail].field)!=720:    # The source buffer was not full. Did we run out of time?
     print ('x',len(buf[tail].field),end='') # If you see this, we have failed
   # Done with this buffer 
   tail=(tail+1)%BUFFERS
@@ -81,7 +81,7 @@ try:
   # This thread will be used to read the input stream into a field buffer
   while True:
     ###### Wait while the buffers are full ######
-    while (tail+1)%BUFFERS == head:
+    while (head+1)%BUFFERS == tail:
       time.sleep(0.0001)
     ###### load the next buffer ######
     buf[head].clearBuffer()
