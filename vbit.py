@@ -8,6 +8,7 @@
 
 # System libraries
 import sys
+import numpy as np
 import time
 import RPi.GPIO as GPIO
 
@@ -33,7 +34,7 @@ fifo=Fifo()
 # buffer stuff
 head=0
 tail=0
-BUFFERS = 2
+BUFFERS = 4
 buf = [0] * BUFFERS
 for i in range(BUFFERS):
   buf[i]=Buffer()
@@ -69,9 +70,10 @@ def fieldEdge(self):
     print ('?') 
   ##### Copy from the source buffer to the fifo #####
   fifo.fill()
-  fifo.spiram.spi.writebytes(buf[tail].field)
-  if len(buf[tail].field)!=720:    # The source buffer was not full. Did we run out of time?
-    print ('x',len(buf[tail].field),end='') # If you see this, we have failed
+  arr=buf[tail].field.reshape(720).tobytes()
+  fifo.spiram.spi.writebytes(arr)
+#  if len(buf[tail].field)!=720:    # The source buffer was not full. Did we run out of time?
+#    print ('x',len(buf[tail].field),end='') # If you see this, we have failed
   # Done with this buffer 
   tail=(tail+1)%BUFFERS
   # Get ready to transmit. Do it now while we have plenty of time
@@ -84,7 +86,7 @@ try:
   while True:
     ###### Wait while the buffers are full ######
     while (head+1)%BUFFERS == tail:
-      time.sleep(0.0001)
+      time.sleep(0.0005)
     ###### load the next buffer ######
     buf[head].clearBuffer()
     # load a field of 16 vbi lines
@@ -92,8 +94,6 @@ try:
       # packet=file.read(packetSize) # file based version
       packet=sys.stdin.buffer.read(packetSize) # read binary from stdin
       buf[head].addPacket(packet)
-      if packet == '':
-        print ('really bad problem that needs fixing')      
     ##### step to the next buffer
     head=(head+1)%BUFFERS
     
@@ -107,8 +107,8 @@ except KeyboardInterrupt: # If CTRL+C is pressed, exit cleanly:
   print("Keyboard interrupt")    
 
 except:
-   print("some error") 
+  print("some error") 
 
 finally:
-   print("clean up") 
-   GPIO.cleanup() # cleanup all GPIO 
+  print("clean up") 
+  GPIO.cleanup() # cleanup all GPIO 

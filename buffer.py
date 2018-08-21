@@ -6,6 +6,7 @@
 # MIT License.
 
 import sys
+import numpy as np
 
 
 #def reverse(x): # reverse the bit order in a byte
@@ -25,17 +26,18 @@ class Buffer:
   clockFrame = b'\xaa\xaa\xe4' # clock run-in and framing code (reversed?)
   print ('Buffer created')
   def __init__(self):
-    self.field=bytearray()
+    self.field=np.ndarray(shape=(16,45), dtype=np.uint8)
     self.count = 0 # The packet count
   def addPacket(self,pkt):
-    self.field.extend(Buffer.clockFrame)
-    self.field.extend(pkt)
+    p=bytearray(Buffer.clockFrame)
+    p.extend(pkt)
+    self.field[self.count]=p   
     self.count+=1
   def clearBuffer(self):
-    self.field=bytearray()
     self.count = 0 # The packet count
   def printPacket(self):
-      print (self.field)
+    for i in range(16):
+      print (bytes(self.field[i]).hex())
 
 
  
