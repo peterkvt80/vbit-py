@@ -1,0 +1,173 @@
+#!/bin/bash
+
+# wss <argument>
+# Sets 26H and 27H on a SAA7121 IC for Wide Screen Signalling
+# Nathan Dane, 2018
+
+b0=0	# Aspect Ratio label, letterbox and position code bit 0
+b1=0    # Aspect Ratio label, letterbox and position code bit 1
+b2=0    # Aspect Ratio label, letterbox and position code bit 2
+b3=0    # Aspect Ratio label, letterbox and position code bit 3
+b4=0	# Film bit
+b5=0	# PAL+
+b6=0	# Vertical Helper (?)
+b7=0	# Ghost cancellation
+b8=0	# Subtitles within teletext
+b9=0	# Subtitling Mode bit 9
+b10=0	# Subtitling Mode bit 10
+b11=0	# Surround Sound
+b12=0	# Copyright
+b13=0	# Copying Restricted
+
+aspect_encode(){
+case "$1" in
+	4:3)
+	b0=0
+	b1=0
+	b2=0
+	b3=1
+	;;
+	14:9centre)
+        b0=1
+        b1=0
+        b2=0
+        b3=0
+        ;;
+        14:9top)
+        b0=0
+        b1=1
+        b2=0
+        b3=0
+        ;;
+        16:9centre)
+        b0=1
+        b1=1
+        b2=0
+        b3=1
+        ;;
+        16:9top)
+        b0=0
+        b1=0
+        b2=1
+        b3=0
+        ;;
+        "+16:9")
+        b0=1
+        b1=0
+        b2=1
+        b3=1
+        ;;
+        14:9safe)
+        b0=0
+        b1=1
+        b2=1
+        b3=1
+        ;;
+        anamorphic16:9)
+        b0=1
+        b1=1
+        b2=1
+        b3=0
+        ;;
+	*)
+        echo "Wide Screen Signalling controller for SAA7171"
+        echo "Usage: $0 <arguments>"
+        echo "Aspect ratio can be any one of the following: 4:3 14:9centre 14:9top 16:9centre 16:9top +16:9 14:9safe anamorphic16:9"
+        echo "Other arguments include: movie pal+ helper cancel teletext subinimg suboutimg surround copyright restrict"
+        echo "Type: '$0 help' for more information"
+        exit 1
+
+
+esac
+}
+
+arguments_encode(){
+case "$1" in
+	movie)
+	b4=1
+	;;
+        pal+)
+        b5=1
+        ;;
+        helper)
+        b6=1
+        ;;
+        cancel)
+        b7=1
+        ;;
+        teletext)
+        b8=1
+        ;;
+        subinimg)
+        b9=1
+	b10=0
+        ;;
+        suboutimg)
+	b9=0
+        b10=1
+        ;;
+        surround)
+        b11=1
+        ;;
+        copyright)
+        b12=1
+        ;;
+        restrict)
+        b13=1
+        ;;
+	help)
+	printf "Wide Screen Signalling controller for SAA7171\n\nUsage $0 <arguments>
+
+ASPECT RATIO
+The following arguments set the aspect ratio.
+4:3 (default)
+14:9centre
+14:9top
+16:9centre
+16:9top
++16:9
+14:9safe
+anamorphic16:9
+
+ENHANCED SERVICES
+The following arguments are for PAL+ enhanced services
+movie	sets the film bit to 1 for progressive scanning
+pal+	sets the colour mode to 'Colour Plus'
+helper	sets the vertical helper bit to 'present'
+cancel	sets bit 7 to 1 for ghost cancellation
+
+SUBTITLING
+teletext	turns on bit 8 teletext subtitles
+subinimg	sets bits 9 and 10 for subtitles in the active image area
+suboutimg	sets bits 9 and 10 for subtitles outside of the active image area.
+Note that if both subinimg and suboutimg are present, the last called takes precedence.
+
+OTHERS
+surround	sets bit 11 for surround sound mode
+copyright	sets bit 12 to 'Copyright Asserted'
+restrict	sets bit 13 to 'Copying Restricted'
+
+All of the above except the aspect ratio default to 0.\n"
+	exit 1
+	;;
+        *)
+        aspect_encode $1
+
+esac
+}
+
+arg=1
+while [ $arg -lt $# ] || [ $arg -eq $# ] || [ $# -eq 0 ]
+do
+	arguments_encode ${!arg}
+	((arg++))
+done
+
+one=`printf '%x\n' "$((2#$b7$b6$b5$b4$b3$b2$b1$b0))"`
+two=`printf '%x\n' "$((2#10$b13$b12$b11$b10$b9$b8))"`
+
+echo "$b0$b1$b2$b3$b4$b5$b6$b7$b8$b9$b10$b11$b12$b13"
+echo "0x$one 0x$two"
+
+sudo i2cset -y 1 0x44 0x26 0x$one
+sudo i2cset -y 1 0x44 0x27 0x$two
