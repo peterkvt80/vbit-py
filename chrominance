@@ -1,0 +1,48 @@
+#!/bin/bash
+
+saturation=64
+hue=0
+
+echo "Chrominance Controller for SAA7113 Video Input Processor"
+echo "Default Values:"
+echo "Saturation: 64 Hue: 0"
+echo "Use the S and X keys to raise and lower saturation;"
+echo "H and N raise and lower hue"
+echo "Press Q key to exit"
+
+while true; do
+    read -rsn1 input
+    if [ "$input" = "s" ]; then 
+        if [ $saturation -lt "255" ]; then
+	    ((saturation++))
+	fi
+        echo "Saturation Up:" $saturation
+        i2cset -y 1 0x25 0x0c $saturation
+    fi
+    if [ "$input" = "x" ]; then
+        if [ $saturation -gt "0" ]; then
+            ((saturation--))
+        fi
+        echo "Saturation Down:" $saturation
+        i2cset -y 1 0x25 0x0c $saturation
+    fi
+    if [ "$input" = "h" ]; then
+        if [ $hue -lt "255" ]; then
+            ((hue++))
+        fi
+        echo "Hue Up:" $hue
+        i2cset -y 1 0x25 0x0d $hue
+    fi
+    if [ "$input" = "n" ]; then
+        if [ $hue -gt "0" ]; then
+            ((hue--))
+        fi
+        echo "Hue Down:" $hue
+        i2cset -y 1 0x25 0x0d $hue
+    fi
+
+    if [ "$input" = "q" ]; then
+        echo "Saturation:" $saturation "Hue" $hue
+	exit 
+    fi
+done

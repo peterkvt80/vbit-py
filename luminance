@@ -1,0 +1,48 @@
+#!/bin/bash
+
+brightness=128
+contrast=71
+
+echo "Luminance Controller for SAA7113 Video Input Processor"
+echo "Default Values:"
+echo "Brightness: 128 Contrast: 71"
+echo "Use the D and C keys to raise and lower contrast;"
+echo "G and B raise and lower brightness"
+echo "Press Q key to exit"
+
+while true; do
+    read -rsn1 input
+    if [ "$input" = "g" ]; then 
+        if [ $brightness -lt "255" ]; then
+	    ((brightness++))
+	fi
+        echo "Brightness Up:" $brightness
+        i2cset -y 1 0x25 0x0a $brightness
+    fi
+    if [ "$input" = "b" ]; then
+        if [ $brightness -gt "0" ]; then
+            ((brightness--))
+        fi
+        echo "Brightness Down:" $brightness
+        i2cset -y 1 0x25 0x0a $brightness
+    fi
+    if [ "$input" = "d" ]; then
+        if [ $contrast -lt "255" ]; then
+            ((contrast++))
+        fi
+        echo "Contrast Up:" $contrast
+        i2cset -y 1 0x25 0x0b $contrast
+    fi
+    if [ "$input" = "c" ]; then
+        if [ $contrast -gt "0" ]; then
+            ((contrast--))
+        fi
+        echo "Contrast Down:" $contrast
+        i2cset -y 1 0x25 0x0b $contrast
+    fi
+
+    if [ "$input" = "q" ]; then
+        echo "Brightness:" $brightness "Contrast" $contrast
+	exit 
+    fi
+done
