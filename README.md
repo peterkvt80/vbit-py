@@ -35,3 +35,12 @@ pi@raspberrypi:~/vbit-py $ python spi.py
 [65, 66, 67, 68, 77, 77, 77, 77, 77, 77, 77, 55, 77, 77, 77]
 clean up
 ```
+
+## Control Scripts
+I've included some scripts to control some of the IC's other features.
+### WSS
+The SAA7121 is capable of Wide Screen Signalling. This allows TVs to automatically switch between aspect ratios. Run ./wss help for full details.
+### Brightness and Contrast
+Running ./luminance allows interactive control over the input video signal's brightness and contrast. Note that the script doesn't save the new values as default, so you'll need to change the appropriate values in saa7113.py if you want to save the changes.
+### Hue and Saturation
+Run ./chrominance to adjust the Hue and Saturation. As above, doesn't save the new values but is very useful for adjusting settings quickly.
