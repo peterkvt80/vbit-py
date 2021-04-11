@@ -72,8 +72,8 @@ def fieldEdge(self):
   fifo.fill()
   arr=buf[tail].field.reshape(720).tobytes()
   fifo.spiram.spi.writebytes(arr)
-#  if len(buf[tail].field)!=720:    # The source buffer was not full. Did we run out of time?
-#    print ('x',len(buf[tail].field),end='') # If you see this, we have failed
+  if len(arr)!=720:    # The source buffer was not full. Did we run out of time?
+    print ('x',len(arr),end='') # If you see this, we have failed
   # Done with this buffer 
   tail=(tail+1)%BUFFERS
   # Get ready to transmit. Do it now while we have plenty of time

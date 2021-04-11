@@ -61,28 +61,28 @@ class SPIRAM: # spiram is used as a hardware buffer  to play out the teletext pa
     self.deselect()
  
 #try:
-  # exercise the interface 
-#spiram=SPIRAM(0,0) # create an instance
-#spiram.setStatus(SPIRAM.MODE_SEQUENTIAL) ## set the addressing mode
+   #exercise the interface 
+#	spiram=SPIRAM(0,0) # create an instance
+#	spiram.setStatus(SPIRAM.MODE_SEQUENTIAL) ## set the addressing mode
 
   # write a small block
-#spiram.setAddress(SPIRAM.WRITE,0x100)
-#b=[65,66,67,68,77,77,77,77,77,77,77,55,77,77,77]
-#spiram.spi.writebytes(b)
-#spiram.deselect()
+#	spiram.setAddress(SPIRAM.WRITE,0x100)
+#	b=[65,66,67,68,77,77,77,77,77,77,77,55,77,77,77]
+#	spiram.spi.writebytes(b)
+#	spiram.deselect()
 
   # read it back. It should match
-#spiram.setAddress(SPIRAM.READ,0x100)
-#print (spiram.spi.readbytes(len(b)))
-#spiram.deselect()
+#	spiram.setAddress(SPIRAM.READ,0x100)
+#	print (spiram.spi.readbytes(len(b)))
+#	spiram.deselect()
 
 #except KeyboardInterrupt: # If CTRL+C is pressed, exit cleanly:
 #  print("Keyboard interrupt")    
 
 #except:
-   #print("some error") 
+#   print("some error") 
 
 #finally:
-   #print("clean up") 
-   #GPIO.cleanup() # cleanup all GPIO 
+#   print("clean up") 
+#   GPIO.cleanup() # cleanup all GPIO 
    

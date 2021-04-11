@@ -21,9 +21,9 @@ def saa7113():
   bus.write_byte_data(0x25, 0x0b, 0x47) # 0x0b,0x47, // luminance contrast - Set to ITU level
   bus.write_byte_data(0x25, 0x0c, 0x40) # 0x0c,0x40, // chrominance saturation - Set to ITU level
   bus.write_byte_data(0x25, 0x0d, 0x00) # 0x0d,0x00, // chrominance hue - Phase control
-  bus.write_byte_data(0x25, 0x0e, 0x01) # 0x0e,0x01, // chrominance control - Normal bandwidth 800kHz, PAL
+  bus.write_byte_data(0x25, 0x0e, 0x03) # 0x0e,0x01, // chrominance control - Normal bandwidth 800kHz, PAL
   bus.write_byte_data(0x25, 0x0f, 0x2a) # 0x0f,0x2a, // chrominance gain control ?
-  bus.write_byte_data(0x25, 0x10, 0x00) # 0x10,0x00, // format/delay control - Mainly ITU 656
+  bus.write_byte_data(0x25, 0x10, 0x01) # 0x10,0x00, // format/delay control - Mainly ITU 656
   bus.write_byte_data(0x25, 0x11, 0x0c) # 0x11,0x0c, // output control 1
   bus.write_byte_data(0x25, 0x12, 0xa1) # 0x12,0xa1, // output control 2 - Default 0x01. Controls RTS0 (don't care) and RTS1 - ODD/EVEN Field
   bus.write_byte_data(0x25, 0x13, 0x00) # 0x13,0x00, // output control 3 - Analog test select (don't care)
