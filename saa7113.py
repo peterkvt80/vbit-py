@@ -15,7 +15,7 @@ def saa7113():
   bus.write_byte_data(0x25, 0x05, 0x00) # 0x05,0x00, // analog control 4 - Static Gain channel 2 (Don't care)
   bus.write_byte_data(0x25, 0x06, 0xe9) # 0x06,0xe9, // horiz sync start - e9 recommnded
   bus.write_byte_data(0x25, 0x07, 0x0d) # 0x07,0x0d, // horiz sync stop - 0d recommended
-  bus.write_byte_data(0x25, 0x08, 0x98) # 0x08,0x98, // sync control - vertical noise=normal, PLL closed, Fast locking mode, field toggle on interlace, field detection AUFD 
+  bus.write_byte_data(0x25, 0x08, 0x00) # 0x08,0x98, // sync control - vertical noise=normal, PLL closed, TV mode, field toggle on interlace, field selection fixed to 50Hz. TV mode used because fast locking mode can change to out-of-spec timings when removing video source, preventing text from working when source disconnected.
   bus.write_byte_data(0x25, 0x09, 0x01) # 0x09,0x01, // luminance control - aperture factor = 0.25, update agc per line,active luma (correct?), bandpass 4MHz, prefilter bypassed, chroma trap set for CVBS
   bus.write_byte_data(0x25, 0x0a, 0x80) # 0x0a,0x80, // luminance brightness - Set to ITU level
   bus.write_byte_data(0x25, 0x0b, 0x47) # 0x0b,0x47, // luminance contrast - Set to ITU level
@@ -25,7 +25,7 @@ def saa7113():
   bus.write_byte_data(0x25, 0x0f, 0x2a) # 0x0f,0x2a, // chrominance gain control ?
   bus.write_byte_data(0x25, 0x10, 0x01) # 0x10,0x00, // format/delay control - Mainly ITU 656
   bus.write_byte_data(0x25, 0x11, 0x0c) # 0x11,0x0c, // output control 1
-  bus.write_byte_data(0x25, 0x12, 0xa1) # 0x12,0xa1, // output control 2 - Default 0x01. Controls RTS0 (don't care) and RTS1 - ODD/EVEN Field
+  bus.write_byte_data(0x25, 0x12, 0xb1) # 0x12,0xa1, // output control 2 - Default 0x01. Controls RTS0 (don't care) and RTS1 - Vertical Sync
   bus.write_byte_data(0x25, 0x13, 0x00) # 0x13,0x00, // output control 3 - Analog test select (don't care)
 
   bus.write_byte_data(0x25, 0x15, 0x00) # 0x15,0x00, // VGATE start - Probably don't care

@@ -22,7 +22,7 @@ GPIO.setup(22, GPIO.IN)
 
 try:
   while True:
-    GPIO.wait_for_edge(22, GPIO.RISING) # Look for the field pulse
+    GPIO.wait_for_edge(22, GPIO.FALLING) # Look for the field pulse
     GPIO.output(4, GPIO.HIGH) # blink the LED
     GPIO.wait_for_edge(22, GPIO.FALLING) # Look for the field pulse
     GPIO.output(4, GPIO.LOW) # blink the LED
