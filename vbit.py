@@ -99,7 +99,7 @@ try:
     
     # Sequence the startup so we get fully buffered before we start transmitting
     if countdown==1: # now the buffer is full we can enable interrupts
-      GPIO.add_event_detect(GPIO_FLD, GPIO.BOTH, callback=fieldEdge) # Look for the field pulse   
+      GPIO.add_event_detect(GPIO_FLD, GPIO.FALLING, callback=fieldEdge) # Look for the field pulse   
     if countdown>0:
       countdown-=1
 
